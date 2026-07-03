@@ -1,0 +1,31 @@
+{
+  "name": "fintalk-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "lint": "npm run lint:api && npm run lint:web",
+    "lint:api": "cd apps/api && npm run lint",
+    "lint:web": "cd apps/web && npm run lint",
+    "lint:fix": "npm run lint:fix:api && npm run lint:fix:web",
+    "lint:fix:api": "cd apps/api && npm run lint:fix",
+    "lint:fix:web": "cd apps/web && npm run lint:fix",
+    "format": "prettier --write . && npm run format:web",
+    "format:check": "prettier --check . && npm run format:web:check",
+    "format:web": "cd apps/web && npm run format",
+    "format:web:check": "cd apps/web && npm run format:check",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.3",
+    "typescript-eslint": "^8.60.1"
+  },
+  "lint-staged": {
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}

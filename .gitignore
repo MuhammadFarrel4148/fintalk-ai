@@ -1,3 +1,9 @@
 # Documentation
 CLAUDE.md
 prd.md
+
+# Environment
+.env
+
+# Dependencies
+node_modules
