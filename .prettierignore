@@ -1,0 +1,12 @@
+node_modules
+.next
+dist
+build
+coverage
+*.lock
+apps/api/generated
+prisma/migrations
+
+# apps/web formats itself (needs prettier-plugin-tailwindcss from its own
+# node_modules, which root's prettier can't resolve across the install tree)
+apps/web
