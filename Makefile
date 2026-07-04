@@ -4,6 +4,12 @@ SHELL := /bin/bash
 up:
 	docker compose up -d
 
+up-build:
+	docker compose up --build -d
+
+build:
+	docker compose build
+
 down:
 	docker compose down
 
@@ -37,3 +43,7 @@ check:
 
 fix:
 	npm run lint:fix && npm run format
+
+# Database
+seed:
+	cd apps/api && npx prisma db seed
