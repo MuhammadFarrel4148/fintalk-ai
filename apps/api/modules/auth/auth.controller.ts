@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "../lib/asyncHandler.js";
-import { authService } from "../services/auth.service.js";
+import { asyncHandler } from "../../lib/asyncHandler.js";
+import { authService } from "./auth.service.js";
 
 // Keep in sync with EXPIRES_IN ("7h") in lib/jwt.ts.
 const COOKIE_MAX_AGE_MS = 7 * 60 * 60 * 1000;

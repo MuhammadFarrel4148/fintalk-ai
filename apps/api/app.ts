@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { ClientError } from "./exceptions/index.js";
-import authRoutes from "./routes/auth.routes.js";
+import authRoutes from "./modules/auth/auth.routes.js";
 
 const app = express();
 
@@ -36,12 +36,10 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     });
   }
 
-  res
-    .status(500)
-    .json({
-      success: false,
-      error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan pada server" },
-    });
+  res.status(500).json({
+    success: false,
+    error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan pada server" },
+  });
 });
 
 export default app;
