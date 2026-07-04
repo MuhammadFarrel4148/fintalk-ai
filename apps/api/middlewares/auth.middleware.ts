@@ -18,11 +18,9 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     req.user = verifyToken(token);
     next();
   } catch {
-    res
-      .status(401)
-      .json({
-        success: false,
-        error: { code: "INVALID_TOKEN", message: "Invalid or expired token" },
-      });
+    res.status(401).json({
+      success: false,
+      error: { code: "INVALID_TOKEN", message: "Invalid or expired token" },
+    });
   }
 }

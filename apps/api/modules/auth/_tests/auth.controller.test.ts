@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
 import { authController } from "../auth.controller";
-import { authService } from "../../services/auth.service";
+import { authService } from "../auth.service";
 
-vi.mock("../../services/auth.service", () => ({
+vi.mock("../auth.service", () => ({
   authService: { login: vi.fn() },
 }));
 

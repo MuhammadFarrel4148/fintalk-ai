@@ -1,6 +1,6 @@
-import { UserPayload, signToken } from "../lib/jwt.js";
-import { UnauthorizedError } from "../exceptions/index.js";
-import { authRepository } from "../repositories/auth.repository.js";
+import { UserPayload, signToken } from "../../lib/jwt.js";
+import { UnauthorizedError } from "../../exceptions/index.js";
+import { authRepository } from "./auth.repository.js";
 
 export const authService = {
   async login(email: string, password: string): Promise<{ token: string; user: UserPayload }> {

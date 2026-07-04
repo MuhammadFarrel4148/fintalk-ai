@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { authService } from "../auth.service";
-import { authRepository } from "../../repositories/auth.repository";
+import { authRepository } from "../auth.repository";
 
-vi.mock("../../repositories/auth.repository", () => ({
+vi.mock("../auth.repository", () => ({
   authRepository: { findUserByEmail: vi.fn() },
 }));
 
