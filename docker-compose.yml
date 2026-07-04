@@ -6,6 +6,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       WATCHPACK_POLLING: "true"
+      NEXT_PUBLIC_API_URL: http://localhost:3100
     volumes:
       - ./apps/web:/app
       - /app/node_modules

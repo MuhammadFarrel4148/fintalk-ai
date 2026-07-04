@@ -24,6 +24,7 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://postgres:password@db:5432/fintalk_test?schema=public
+      JWT_SECRET: test-secret-ci
     steps:
       - uses: actions/checkout@v4
       - name: Install OpenSSL
