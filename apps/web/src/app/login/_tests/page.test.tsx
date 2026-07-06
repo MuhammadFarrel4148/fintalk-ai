@@ -72,7 +72,7 @@ describe("Login page", () => {
     await user.type(screen.getByPlaceholderText("••••••••"), "secret123");
     await user.click(screen.getByRole("button", { name: "Masuk" }));
 
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/dashboard"));
 
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/auth/login"),
@@ -133,6 +133,6 @@ describe("Login page", () => {
       json: async () => ({ data: { id: "1", email: "user@example.com" } }),
     });
 
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/dashboard"));
   });
 });

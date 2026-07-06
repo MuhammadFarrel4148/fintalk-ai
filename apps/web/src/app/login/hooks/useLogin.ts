@@ -35,7 +35,7 @@ export function useLogin() {
       loginRequest(email, password),
     onSuccess: (user) => {
       queryClient.setQueryData(["auth", "me"], user);
-      router.push("/");
+      router.push("/dashboard");
     },
   });
 
