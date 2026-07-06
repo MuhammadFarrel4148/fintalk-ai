@@ -25,7 +25,8 @@ export const authController = {
     res.status(200).json({ success: true, data: null });
   },
 
-  me: (req: Request, res: Response) => {
-    res.status(200).json({ success: true, data: req.user });
-  },
+  me: asyncHandler(async (req: Request, res: Response) => {
+    const user = await authService.me(req.user!.id);
+    res.status(200).json({ success: true, data: user });
+  }),
 };

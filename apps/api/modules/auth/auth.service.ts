@@ -1,6 +1,10 @@
 import { UserPayload, signToken } from "../../lib/jwt.js";
-import { UnauthorizedError } from "../../exceptions/index.js";
+import { UnauthorizedError, NotFoundError } from "../../exceptions/index.js";
 import { authRepository } from "./auth.repository.js";
+
+export interface UserProfile extends UserPayload {
+  balance: number;
+}
 
 export const authService = {
   async login(email: string, password: string): Promise<{ token: string; user: UserPayload }> {
@@ -12,5 +16,15 @@ export const authService = {
 
     const payload: UserPayload = { id: user.id, email: user.email };
     return { token: signToken(payload), user: payload };
+  },
+
+  async me(userId: string): Promise<UserProfile> {
+    const user = await authRepository.findUserById(userId);
+
+    if (!user) {
+      throw new NotFoundError("User tidak ditemukan");
+    }
+
+    return { id: user.id, email: user.email, balance: Number(user.balance) };
   },
 };

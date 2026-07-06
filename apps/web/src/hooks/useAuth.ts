@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 interface AuthUser {
   id: string;
   email: string;
+  balance: number;
 }
 
 async function fetchMe(): Promise<AuthUser | null> {
