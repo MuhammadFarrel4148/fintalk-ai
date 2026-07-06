@@ -18,8 +18,50 @@ model User {
   password         String
   telegramId       String?  @unique @map("telegram_id")
   telegramUsername String?  @map("telegram_username")
+  balance          Decimal  @default(0) @db.Decimal(15, 2)
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
+  transactions Transaction[]
+  categories   Category[]
+
   @@map("users")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id])
+  name      String
+  isDefault Boolean  @default(true) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transactions Transaction[]
+
+  @@unique([name, userId])
+  @@map("categories")
+}
+
+enum TransactionType {
+  income
+  expense
+}
+
+model Transaction {
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  user            User            @relation(fields: [userId], references: [id])
+  categoryId      String          @map("category_id")
+  category        Category        @relation(fields: [categoryId], references: [id])
+  amount          Decimal         @db.Decimal(15, 2)
+  type            TransactionType
+  description     String?
+  rawInput        String?         @map("raw_input")
+  source          String          @default("telegram")
+  transactionDate DateTime        @map("transaction_date")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@map("transactions")
 }

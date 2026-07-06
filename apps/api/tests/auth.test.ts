@@ -56,6 +56,7 @@ describe("GET /api/auth/me", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toMatchObject({ id: expect.any(String), email: testUser.email });
+    expect(res.body.data.balance).toBe(0);
   });
 });
 

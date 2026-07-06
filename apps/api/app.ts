@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { ClientError } from "./exceptions/index.js";
 import authRoutes from "./modules/auth/auth.routes.js";
+import transactionsRoutes from "./modules/transactions/transactions.routes.js";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/transactions", transactionsRoutes);
 
 app.use((_req, res) =>
   res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "Route not found" } })

@@ -3,7 +3,7 @@ import { authService } from "../auth.service";
 import { authRepository } from "../auth.repository";
 
 vi.mock("../auth.repository", () => ({
-  authRepository: { findUserByEmail: vi.fn() },
+  authRepository: { findUserByEmail: vi.fn(), findUserById: vi.fn() },
 }));
 
 describe("authService.login", () => {
@@ -30,5 +30,25 @@ describe("authService.login", () => {
     const result = await authService.login("a@b.com", "correct");
     expect(result.user).toEqual({ id: "1", email: "a@b.com" });
     expect(result.token).toEqual(expect.any(String));
+  });
+});
+
+describe("authService.me", () => {
+  it("throws 404 when user not found", async () => {
+    vi.mocked(authRepository.findUserById).mockResolvedValue(null);
+    await expect(authService.me("1")).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("returns id/email/balance with the Decimal balance converted to a number", async () => {
+    vi.mocked(authRepository.findUserById).mockResolvedValue({
+      id: "1",
+      email: "a@b.com",
+      balance: "5000000.00",
+    } as never);
+
+    const result = await authService.me("1");
+
+    expect(result).toEqual({ id: "1", email: "a@b.com", balance: 5000000 });
+    expect(typeof result.balance).toBe("number");
   });
 });

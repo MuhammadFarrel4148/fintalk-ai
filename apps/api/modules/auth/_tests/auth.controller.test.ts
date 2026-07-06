@@ -4,7 +4,7 @@ import { authController } from "../auth.controller";
 import { authService } from "../auth.service";
 
 vi.mock("../auth.service", () => ({
-  authService: { login: vi.fn() },
+  authService: { login: vi.fn(), me: vi.fn() },
 }));
 
 function mockRes() {
@@ -101,14 +101,30 @@ describe("authController.logout", () => {
 });
 
 describe("authController.me", () => {
-  it("responds 200 with req.user", () => {
-    const user = { id: "1", email: "a@b.com" };
-    const req = { user } as Request;
+  it("calls authService.me with req.user.id and responds 200 with the returned profile", async () => {
+    const profile = { id: "1", email: "a@b.com", balance: 5000000 };
+    vi.mocked(authService.me).mockResolvedValue(profile);
+    const req = { user: { id: "1", email: "a@b.com" } } as Request;
     const res = mockRes();
+    const next = vi.fn() as NextFunction;
 
-    authController.me(req, res);
+    await authController.me(req, res, next);
 
+    expect(authService.me).toHaveBeenCalledWith("1");
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ success: true, data: user });
+    expect(res.json).toHaveBeenCalledWith({ success: true, data: profile });
+  });
+
+  it("forwards a rejected authService.me to next without responding", async () => {
+    const error = new Error("User tidak ditemukan");
+    vi.mocked(authService.me).mockRejectedValue(error);
+    const req = { user: { id: "1", email: "a@b.com" } } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await authController.me(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.json).not.toHaveBeenCalled();
   });
 });
