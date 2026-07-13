@@ -4,7 +4,7 @@ import { transactionsController } from "../transactions.controller";
 import { transactionsService } from "../transactions.service";
 
 vi.mock("../transactions.service", () => ({
-  transactionsService: { getIncomeTotal: vi.fn(), getExpenseTotal: vi.fn() },
+  transactionsService: { list: vi.fn(), getIncomeTotal: vi.fn(), getExpenseTotal: vi.fn() },
 }));
 
 function mockRes() {
@@ -13,6 +13,53 @@ function mockRes() {
   res.json = vi.fn().mockReturnValue(res);
   return res;
 }
+
+describe("transactionsController.list", () => {
+  it("responds 200 with the paginated transaction list for the authenticated user", async () => {
+    const data = {
+      transactions: [
+        {
+          id: "tx-1",
+          date: new Date("2026-07-10T00:00:00.000Z"),
+          description: "Gaji bulanan",
+          category: { id: "cat-1", name: "Gaji" },
+          amount: 5000000,
+          type: "income",
+        },
+      ],
+      pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
+    };
+    vi.mocked(transactionsService.list).mockResolvedValue(data as never);
+    const req = {
+      user: { id: "user-1", email: "a@b.com" },
+      validatedQuery: { page: 1, limit: 10 },
+    } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.list(req, res, next);
+
+    expect(transactionsService.list).toHaveBeenCalledWith("user-1", { page: 1, limit: 10 });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ success: true, data });
+  });
+
+  it("forwards a rejected list to next without responding", async () => {
+    const error = new Error("boom");
+    vi.mocked(transactionsService.list).mockRejectedValue(error);
+    const req = {
+      user: { id: "user-1", email: "a@b.com" },
+      validatedQuery: { page: 1, limit: 10 },
+    } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.list(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.json).not.toHaveBeenCalled();
+  });
+});
 
 describe("transactionsController.getIncome", () => {
   it("responds 200 with the income total for the authenticated user", async () => {
