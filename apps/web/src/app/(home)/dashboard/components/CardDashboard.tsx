@@ -1,12 +1,5 @@
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+import { formatCurrency } from "@/lib/utils";
 
 export function SisaSaldoCard({ balance }: { balance: number }) {
   return (

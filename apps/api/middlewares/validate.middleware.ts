@@ -1,9 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
 
-export function validate(schema: ZodSchema) {
+declare module "express" {
+  interface Request {
+    validatedQuery?: unknown;
+  }
+}
+
+export function validate(schema: ZodSchema, source: "body" | "query" = "body") {
   return (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req.body);
+    const input = source === "query" ? req.query : req.body;
+    const result = schema.safeParse(input);
     if (!result.success) {
       return res.status(422).json({
         success: false,
@@ -14,7 +21,11 @@ export function validate(schema: ZodSchema) {
         },
       });
     }
-    req.body = result.data;
+    if (source === "query") {
+      req.validatedQuery = result.data;
+    } else {
+      req.body = result.data;
+    }
     next();
   };
 }
