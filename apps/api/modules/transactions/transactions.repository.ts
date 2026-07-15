@@ -45,4 +45,33 @@ export const transactionsRepository = {
   count(userId: string, filters: ListFilters) {
     return prisma.transaction.count({ where: buildWhere(userId, filters) });
   },
+
+  groupExpenseByCategory(userId: string, from: Date, to: Date) {
+    return prisma.transaction.groupBy({
+      by: ["categoryId", "type"],
+      where: { userId, type: "expense", transactionDate: { gte: from, lte: to } },
+      _sum: { amount: true },
+      _count: { _all: true },
+    });
+  },
+
+  groupIncomeByCategory(userId: string, from: Date, to: Date) {
+    return prisma.transaction.groupBy({
+      by: ["categoryId", "type"],
+      where: { userId, type: "income", transactionDate: { gte: from, lte: to } },
+      _sum: { amount: true },
+      _count: { _all: true },
+    });
+  },
+
+  findCategoriesByIds(ids: string[]) {
+    return prisma.category.findMany({ where: { id: { in: ids } } });
+  },
+
+  findForMonthlySummary(userId: string, from: Date, to: Date) {
+    return prisma.transaction.findMany({
+      where: { userId, transactionDate: { gte: from, lte: to } },
+      select: { amount: true, type: true, transactionDate: true },
+    });
+  },
 };

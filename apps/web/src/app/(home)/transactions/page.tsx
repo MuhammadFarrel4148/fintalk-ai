@@ -1,15 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { useTransactions } from "./hooks/useTransactions";
 import { TransactionsTable } from "./components/TransactionsTable";
 import { PaginationFooter } from "./components/PaginationFooter";
@@ -58,54 +54,7 @@ export default function Page() {
               className="h-9 rounded-lg border border-slate-200 pr-4 pl-10 text-sm text-slate-900 transition-colors outline-none placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
             />
           </div>
-          <div className="flex items-center gap-1">
-            <Popover>
-              <PopoverTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    data-empty={!dateRange?.from}
-                    className="justify-start border-slate-200 bg-white text-left font-normal text-slate-700 hover:bg-slate-50 data-[empty=true]:text-slate-500"
-                  />
-                }
-              >
-                <CalendarIcon className="text-slate-500" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <span>
-                      {format(dateRange.from, "d MMM yyyy", { locale: id })}
-                      {" - "}
-                      {format(dateRange.to, "d MMM yyyy", { locale: id })}
-                    </span>
-                  ) : (
-                    format(dateRange.from, "d MMM yyyy", { locale: id })
-                  )
-                ) : (
-                  <span>Pilih tanggal</span>
-                )}
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="range"
-                  selected={dateRange}
-                  onSelect={handleDateRangeChange}
-                  locale={id}
-                />
-              </PopoverContent>
-            </Popover>
-            {dateRange?.from && (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Hapus filter tanggal"
-                onClick={() => handleDateRangeChange(undefined)}
-                className="text-slate-500 hover:text-slate-700"
-              >
-                <X size={14} />
-              </Button>
-            )}
-          </div>
+          <DateRangeFilter value={dateRange} onChange={handleDateRangeChange} />
         </div>
       </div>
 

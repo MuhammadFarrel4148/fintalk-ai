@@ -15,3 +15,22 @@ export const ListTransactionsQuerySchema = z.object({
 });
 
 export type ListTransactionsQuery = z.infer<typeof ListTransactionsQuerySchema>;
+
+export const CategoryBreakdownQuerySchema = z.object({
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "from must be in YYYY-MM-DD format")
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "to must be in YYYY-MM-DD format")
+    .optional(),
+});
+
+export type CategoryBreakdownQuery = z.infer<typeof CategoryBreakdownQuerySchema>;
+
+export const MonthlySummaryQuerySchema = z.object({
+  months: z.coerce.number().int().min(1).max(24).default(6),
+});
+
+export type MonthlySummaryQuery = z.infer<typeof MonthlySummaryQuerySchema>;

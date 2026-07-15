@@ -4,13 +4,23 @@ import { transactionsController } from "../transactions.controller";
 import { transactionsService } from "../transactions.service";
 
 vi.mock("../transactions.service", () => ({
-  transactionsService: { list: vi.fn(), getIncomeTotal: vi.fn(), getExpenseTotal: vi.fn() },
+  transactionsService: {
+    list: vi.fn(),
+    getIncomeTotal: vi.fn(),
+    getExpenseTotal: vi.fn(),
+    getCategoryBreakdown: vi.fn(),
+    getMonthlySummary: vi.fn(),
+    getCsv: vi.fn(),
+  },
 }));
 
 function mockRes() {
   const res = {} as Response;
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
+  res.setHeader = vi.fn().mockReturnValue(res);
+  res.type = vi.fn().mockReturnValue(res);
+  res.send = vi.fn().mockReturnValue(res);
   return res;
 }
 
@@ -114,5 +124,130 @@ describe("transactionsController.getExpense", () => {
 
     expect(next).toHaveBeenCalledWith(error);
     expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+describe("transactionsController.getCategoryBreakdown", () => {
+  it("responds 200 with the category breakdown for the authenticated user", async () => {
+    const data = {
+      totalExpense: 1000000,
+      categories: [
+        {
+          categoryId: "cat-1",
+          categoryName: "Makanan & Minuman",
+          amount: 700000,
+          transactionCount: 3,
+          percentage: 70,
+        },
+      ],
+    };
+    vi.mocked(transactionsService.getCategoryBreakdown).mockResolvedValue(data);
+    const req = {
+      user: { id: "user-1", email: "a@b.com" },
+      validatedQuery: { from: "2026-07-01", to: "2026-07-31" },
+    } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.getCategoryBreakdown(req, res, next);
+
+    expect(transactionsService.getCategoryBreakdown).toHaveBeenCalledWith("user-1", {
+      from: "2026-07-01",
+      to: "2026-07-31",
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ success: true, data });
+  });
+
+  it("forwards a rejected getCategoryBreakdown to next without responding", async () => {
+    const error = new Error("boom");
+    vi.mocked(transactionsService.getCategoryBreakdown).mockRejectedValue(error);
+    const req = { user: { id: "user-1", email: "a@b.com" }, validatedQuery: {} } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.getCategoryBreakdown(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+describe("transactionsController.getMonthlySummary", () => {
+  it("responds 200 with the monthly summary for the authenticated user", async () => {
+    const data = {
+      months: [{ month: "2026-07", label: "Jul", income: 1500000, expense: 300000 }],
+    };
+    vi.mocked(transactionsService.getMonthlySummary).mockResolvedValue(data);
+    const req = {
+      user: { id: "user-1", email: "a@b.com" },
+      validatedQuery: { months: 1 },
+    } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.getMonthlySummary(req, res, next);
+
+    expect(transactionsService.getMonthlySummary).toHaveBeenCalledWith("user-1", { months: 1 });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ success: true, data });
+  });
+
+  it("forwards a rejected getMonthlySummary to next without responding", async () => {
+    const error = new Error("boom");
+    vi.mocked(transactionsService.getMonthlySummary).mockRejectedValue(error);
+    const req = {
+      user: { id: "user-1", email: "a@b.com" },
+      validatedQuery: { months: 6 },
+    } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.getMonthlySummary(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+describe("transactionsController.getCsv", () => {
+  it("responds 200 with the CSV content and a download-friendly Content-Disposition header", async () => {
+    const csvContent =
+      "Kategori,Jenis Transaksi,Total Transaksi,Jumlah Transaksi\nGaji,income,5000000,1";
+    vi.mocked(transactionsService.getCsv).mockResolvedValue(csvContent);
+    const req = {
+      user: { id: "user-1", email: "a@b.com" },
+      validatedQuery: { from: "2026-07-01", to: "2026-07-31" },
+    } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.getCsv(req, res, next);
+
+    expect(transactionsService.getCsv).toHaveBeenCalledWith("user-1", {
+      from: "2026-07-01",
+      to: "2026-07-31",
+    });
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Disposition",
+      "attachment; filename=laporan.csv"
+    );
+    expect(res.type).toHaveBeenCalledWith("text/csv");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(csvContent);
+    expect(res.json).not.toHaveBeenCalled();
+  });
+
+  it("forwards a rejected getCsv to next without responding", async () => {
+    const error = new Error("boom");
+    vi.mocked(transactionsService.getCsv).mockRejectedValue(error);
+    const req = { user: { id: "user-1", email: "a@b.com" }, validatedQuery: {} } as Request;
+    const res = mockRes();
+    const next = vi.fn() as NextFunction;
+
+    await transactionsController.getCsv(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.send).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,38 @@
 import { transactionsRepository } from "./transactions.repository.js";
-import { ListTransactionsQuery } from "./transactions.schema.js";
+import {
+  ListTransactionsQuery,
+  CategoryBreakdownQuery,
+  MonthlySummaryQuery,
+} from "./transactions.schema.js";
+
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
+];
+
+function getCurrentMonthRange(): { from: Date; to: Date } {
+  const now = new Date();
+  const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+  return { from, to };
+}
+
+function getLastNMonthsRange(months: number): { from: Date; to: Date } {
+  const now = new Date();
+  const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (months - 1), 1));
+  const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+  return { from, to };
+}
 
 export const transactionsService = {
   async getIncomeTotal(userId: string): Promise<{ total: number }> {
@@ -37,5 +70,99 @@ export const transactionsService = {
         totalPages: Math.max(1, Math.ceil(total / limit)),
       },
     };
+  },
+
+  async getCategoryBreakdown(userId: string, query: CategoryBreakdownQuery) {
+    const { from, to } =
+      query.from && query.to
+        ? {
+            from: new Date(`${query.from}T00:00:00.000Z`),
+            to: new Date(`${query.to}T23:59:59.999Z`),
+          }
+        : getCurrentMonthRange();
+
+    const groups = await transactionsRepository.groupExpenseByCategory(userId, from, to);
+    const categoryIds = groups.map((g) => g.categoryId);
+    const categories = await transactionsRepository.findCategoriesByIds(categoryIds);
+    const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
+
+    const totalExpense = groups.reduce((sum, g) => sum + Number(g._sum.amount ?? 0), 0);
+
+    const breakdown = groups
+      .map((g) => {
+        const amount = Number(g._sum.amount ?? 0);
+        return {
+          categoryId: g.categoryId,
+          categoryName: categoryNameById.get(g.categoryId) ?? "Lain-lain",
+          amount,
+          transactionCount: g._count._all,
+          percentage: totalExpense > 0 ? (amount / totalExpense) * 100 : 0,
+        };
+      })
+      .sort((a, b) => b.amount - a.amount);
+
+    return { totalExpense, categories: breakdown };
+  },
+
+  async getMonthlySummary(userId: string, query: MonthlySummaryQuery) {
+    const { months } = query;
+    const { from, to } = getLastNMonthsRange(months);
+    const rows = await transactionsRepository.findForMonthlySummary(userId, from, to);
+
+    const now = new Date();
+    const buckets = new Map<string, { label: string; income: number; expense: number }>();
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+      const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+      buckets.set(key, { label: MONTH_LABELS[date.getUTCMonth()], income: 0, expense: 0 });
+    }
+
+    for (const row of rows) {
+      const rowDate = new Date(row.transactionDate);
+      const key = `${rowDate.getUTCFullYear()}-${String(rowDate.getUTCMonth() + 1).padStart(2, "0")}`;
+      const bucket = buckets.get(key);
+      if (!bucket) continue;
+      if (row.type === "income") {
+        bucket.income += Number(row.amount);
+      } else {
+        bucket.expense += Number(row.amount);
+      }
+    }
+
+    return {
+      months: Array.from(buckets.entries()).map(([month, bucket]) => ({
+        month,
+        label: bucket.label,
+        income: bucket.income,
+        expense: bucket.expense,
+      })),
+    };
+  },
+
+  async getCsv(userId: string, query: CategoryBreakdownQuery) {
+    const { from, to } =
+      query.from && query.to
+        ? {
+            from: new Date(`${query.from}T00:00:00.000Z`),
+            to: new Date(`${query.to}T23:59:59.999Z`),
+          }
+        : getCurrentMonthRange();
+
+    const [groupIncome, groupExpense] = await Promise.all([
+      transactionsRepository.groupIncomeByCategory(userId, from, to),
+      transactionsRepository.groupExpenseByCategory(userId, from, to),
+    ]);
+
+    const groups = [...groupIncome, ...groupExpense];
+    const categoryIds = groups.map((g) => g.categoryId);
+    const categories = await transactionsRepository.findCategoriesByIds(categoryIds);
+    const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
+
+    const rows = groups.map((g) => {
+      const categoryName = categoryNameById.get(g.categoryId) ?? "Lain-lain";
+      return `${categoryName},${g.type},${Number(g._sum.amount ?? 0)},${g._count._all}`;
+    });
+
+    return ["Kategori,Jenis Transaksi,Total Transaksi,Jumlah Transaksi", ...rows].join("\n");
   },
 };
