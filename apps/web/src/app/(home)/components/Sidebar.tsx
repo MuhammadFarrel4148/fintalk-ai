@@ -40,7 +40,7 @@ export default function Sidebar() {
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { name: "Transactions", href: "/transactions", icon: <Banknote size={20} /> },
     { name: "Analytics", href: "/analytics", icon: <ChartLine size={20} /> },
-    { name: "AI Advisor", href: "/ai-advisor", icon: <Bot size={20} /> },
+    { name: "AI Advisor", href: "/advisor", icon: <Bot size={20} /> },
   ];
 
   const menuItemsBottom = [

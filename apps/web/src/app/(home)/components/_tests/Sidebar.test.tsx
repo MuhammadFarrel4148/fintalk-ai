@@ -12,7 +12,7 @@ const ALL_MENU_ITEMS: Array<[string, string]> = [
   ["Dashboard", "/dashboard"],
   ["Transactions", "/transactions"],
   ["Analytics", "/analytics"],
-  ["AI Advisor", "/ai-advisor"],
+  ["AI Advisor", "/advisor"],
   ["Settings", "/settings"],
   ["Logout", "/logout"],
 ];
