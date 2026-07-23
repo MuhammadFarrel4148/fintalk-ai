@@ -2,7 +2,7 @@
 
 import { formatCurrency } from "@/lib/utils";
 import type { CategoryBreakdownItem } from "../hooks/useCategoryBreakdown";
-import { getCategoryIcon } from "./categoryIcons";
+import { getCategoryIcon } from "@/lib/categoryIcons";
 
 interface TopSpendingPanelProps {
   categories: CategoryBreakdownItem[];

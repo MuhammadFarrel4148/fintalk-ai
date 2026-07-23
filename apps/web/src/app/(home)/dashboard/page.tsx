@@ -8,11 +8,23 @@ import {
   TotalPemasukanCard,
   TotalPengeluaranCard,
 } from "./components/CardDashboard";
+import { Bot, Lightbulb, OctagonAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRecentTransactions } from "./hooks/useRecentTransactions";
+
+import TableTransactions from "./components/TableTransactions";
 
 export default function Page() {
   const { user } = useAuth();
   const { income } = useIncome();
   const { expense } = useExpense();
+  const router = useRouter();
+
+  const { transactions, isLoading } = useRecentTransactions();
+
+  const onClickAdvisor = () => {
+    router.push("/advisor");
+  };
 
   return (
     <>
@@ -28,14 +40,42 @@ export default function Page() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-4">
-          <h2 className="mb-4 text-xl font-bold text-slate-900">AI Advisor</h2>
-          <p className="text-center text-slate-400">Coming Soon</p>
+        <div className="flex flex-col rounded-xl border border-slate-200 bg-blue-100 p-6 shadow-sm lg:col-span-4">
+          <div className="flex gap-2">
+            <Bot size={28} className="text-blue-600" />
+            <h2 className="mb-4 text-xl font-bold text-blue-600">AI Advisor</h2>
+          </div>
+          <div className="mb-5 flex flex-col gap-4">
+            <div className="flex items-center gap-2 rounded-xl bg-white p-2">
+              <Lightbulb size={28} className="text-blue-600" />
+              <p>Tanyakan masalah finansialmu kepada Advisor AI</p>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-white p-2">
+              <OctagonAlert size={50} className="text-red-600" />
+              <p>
+                Advisor AI bukan sebagai penasihat, melainkan memberikan ide sesuai dengan finansial
+                yang kamu alami
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClickAdvisor}
+            className="mt-auto w-full cursor-pointer rounded-xl bg-blue-200 p-2 text-blue-600 transition duration-400 ease-in-out hover:bg-blue-600 hover:text-white"
+          >
+            Tanya Advisor Fintalk
+          </button>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-8">
-          <h2 className="mb-4 text-xl font-bold text-slate-900">Transaksi Terakhir</h2>
-          <p className="text-center text-slate-400">Coming Soon</p>
+          <div className="flex justify-between">
+            <h2 className="mb-4 text-xl font-bold text-slate-900">Transaksi Terakhir</h2>
+            <a href="/transactions" className="cursor-pointer text-blue-600 hover:text-blue-800">
+              Lihat semua
+            </a>
+          </div>
+          <TableTransactions transactions={transactions} isLoading={isLoading} />
         </div>
       </div>
     </>
