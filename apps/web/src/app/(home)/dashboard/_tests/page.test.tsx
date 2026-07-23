@@ -3,6 +3,10 @@ import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Page from "../page";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 function renderPage() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -61,13 +65,40 @@ describe("Dashboard page", () => {
     expect(await screen.findByText(formatCurrency(1500000))).toBeInTheDocument();
   });
 
-  it("renders 'Coming Soon' for the AI Advisor and Recent Transactions sections", () => {
-    mockFetchByUrl({});
+  it("renders the AI Advisor panel and the Transaksi Terakhir table with recent transactions", async () => {
+    mockFetchByUrl({
+      "/transactions?": {
+        ok: true,
+        data: {
+          transactions: [
+            {
+              id: "tx-1",
+              date: "2026-07-20T00:00:00.000Z",
+              description: "Gaji bulanan",
+              category: { id: "cat-1", name: "Gaji" },
+              amount: 5000000,
+              type: "income",
+            },
+          ],
+          pagination: { page: 1, limit: 5, total: 1, totalPages: 1 },
+        },
+      },
+    });
+
     renderPage();
 
     expect(screen.getByText("AI Advisor")).toBeInTheDocument();
+    expect(screen.getByText("Tanyakan masalah finansialmu kepada Advisor AI")).toBeInTheDocument();
     expect(screen.getByText("Transaksi Terakhir")).toBeInTheDocument();
-    expect(screen.getAllByText("Coming Soon")).toHaveLength(2);
+    expect(await screen.findByText("Gaji bulanan")).toBeInTheDocument();
+    expect(screen.getByText(`+ ${formatCurrency(5000000)}`)).toBeInTheDocument();
+  });
+
+  it("renders an empty state in Transaksi Terakhir when there are no transactions", async () => {
+    mockFetchByUrl({});
+    renderPage();
+
+    expect(await screen.findByText("Belum ada transaksi")).toBeInTheDocument();
   });
 
   it("renders zero values when the API calls fail", async () => {
