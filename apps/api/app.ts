@@ -5,6 +5,7 @@ import { ClientError } from "./exceptions/index.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import transactionsRoutes from "./modules/transactions/transactions.routes.js";
 import advisorRoutes from "./modules/advisor/advisor.routes.js";
+import telegramRoutes from "./modules/telegram/telegram.routes.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/transactions", transactionsRoutes);
 app.use("/api/advisor", advisorRoutes);
+app.use("/api/telegram", telegramRoutes);
 
 app.use((_req, res) =>
   res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "Route not found" } })
