@@ -24,7 +24,25 @@ function buildWhere(userId: string, filters: ListFilters): Prisma.TransactionWhe
   return where;
 }
 
+export interface CreateTransactionData {
+  userId: string;
+  categoryId: string;
+  amount: number;
+  type: "income" | "expense";
+  description?: string;
+  rawInput?: string;
+  source: string;
+  transactionDate: Date;
+}
+
 export const transactionsRepository = {
+  create(data: CreateTransactionData) {
+    return prisma.transaction.create({
+      data,
+      include: { category: true },
+    });
+  },
+
   sumByType(userId: string, type: "income" | "expense") {
     return prisma.transaction.aggregate({
       where: { userId, type },

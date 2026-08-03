@@ -1,4 +1,4 @@
-import { transactionsRepository } from "./transactions.repository.js";
+import { transactionsRepository, CreateTransactionData } from "./transactions.repository.js";
 import {
   ListTransactionsQuery,
   CategoryBreakdownQuery,
@@ -22,6 +22,18 @@ const MONTH_LABELS = [
 ];
 
 export const transactionsService = {
+  async create(data: CreateTransactionData) {
+    const t = await transactionsRepository.create(data);
+    return {
+      id: t.id,
+      date: t.transactionDate,
+      description: t.description,
+      category: { id: t.category.id, name: t.category.name },
+      amount: Number(t.amount),
+      type: t.type,
+    };
+  },
+
   async getIncomeTotal(userId: string): Promise<{ total: number }> {
     const result = await transactionsRepository.sumByType(userId, "income");
     return { total: Number(result._sum.amount ?? 0) };
