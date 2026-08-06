@@ -119,11 +119,11 @@ async function seedDummyTransactions(userId: string, categories: Map<string, str
 
 async function seedDummyUsers() {
   const superUser = await prisma.user.upsert({
-    where: { email: "farrel@gmail.com" },
+    where: { email: "testproject@gmail.com" },
     update: {},
     create: {
-      email: "farrel@gmail.com",
-      password: "farrelganteng",
+      email: "testproject@gmail.com",
+      password: "testproject",
       telegramId: "telegramId",
       telegramUsername: "telegramUsername",
     },
