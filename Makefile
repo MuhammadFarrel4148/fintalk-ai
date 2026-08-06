@@ -47,3 +47,13 @@ fix:
 # Database
 seed:
 	cd apps/api && npx prisma db seed
+
+# Production deploy (AWS EC2 VM) — uses docker-compose.prod.yml, see .env.production.example
+deploy:
+	docker compose -f docker-compose.prod.yml up --build -d
+
+migrate:
+	docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+
+deploy-seed:
+	docker compose -f docker-compose.prod.yml exec backend npx prisma db seed
